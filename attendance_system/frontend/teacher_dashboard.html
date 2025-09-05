@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Smart Attendance</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* --- CSS Variables for Theme Accuracy --- */
+        :root {
+            --primary-color: #4A90E2;
+            --primary-dark: #3A6EA5;
+            --text-dark: #2c3e50;
+            --text-light: #8FA4B7;
+            --text-gray: #5a6e82;
+            --bg-light: #F7F9FC;
+            --bg-white: #FFFFFF;
+            --border-color: #EAEFF4;
+            --shadow-color: rgba(44, 62, 80, 0.08);
+
+            --color-green: #50E3C2;
+            --color-yellow: #F5A623;
+            --color-red: #D0021B;
+
+            --pill-active-bg: #E6FFFA;
+            --pill-active-text: #38B2AC;
+            --pill-upcoming-bg: #FEF3C7;
+            --pill-upcoming-text: #D97706;
+            --pill-teacher-bg: #EBF4FF;
+            --pill-teacher-text: #4299E1;
+
+            --progress-green: #28a745;
+            --progress-yellow: #ffc107;
+            --progress-red: #dc3545;
+        }
+
+        /* --- General Styling & Reset --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
+
+        /* --- Main Layout --- */
+        .dashboard-container { display: flex; flex-direction: column; min-height: 100vh; }
+        .main-content { padding: 2rem; width: 100%; max-width: 1600px; margin: 0 auto; }
+
+        /* --- Reusable Components --- */
+        .card { background-color: var(--bg-white); border-radius: 12px; box-shadow: 0 5px 20px var(--shadow-color); padding: 1.5rem; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+        .btn-primary { background-color: var(--primary-color); color: var(--bg-white); }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-alert { background-color: var(--color-red); color: var(--bg-white); padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .btn-alert:hover { background-color: #a00215; }
+
+        /* --- Header / Navbar --- */
+        .header { background-color: var(--bg-white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .logo { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 700; color: var(--text-dark); }
+        .logo i { color: var(--primary-color); }
+
+        .user-menu { position: relative; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--primary-color); color: var(--bg-white); display: flex; justify-content: center; align-items: center; font-weight: 600; cursor: pointer; }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 130%;
+            right: 0;
+            background-color: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            width: 240px;
+            z-index: 1000;
+            border: 1px solid var(--border-color);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dropdown-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .dropdown-header h4 { font-weight: 600; font-size: 0.9rem; }
+        .dropdown-header p { font-size: 0.8rem; color: var(--text-gray); }
+        .dropdown-header .pill { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.7rem; font-weight: 700; margin-top: 0.5rem; background-color: var(--pill-teacher-bg); color: var(--pill-teacher-text); }
+        .dropdown-list { list-style: none; padding: 0.5rem 0; }
+        .dropdown-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--text-gray); text-decoration: none; font-size: 0.9rem; }
+        .dropdown-list a i { width: 16px; text-align: center; color: var(--text-light); }
+        .dropdown-list a:hover { background-color: var(--bg-light); color: var(--text-dark); }
+        .dropdown-list a:hover i { color: var(--primary-color); }
+
+        /* --- Dashboard Welcome Header --- */
+        .dashboard-header { margin-bottom: 2rem; }
+        .dashboard-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .dashboard-header p { color: var(--text-gray); font-size: 1rem; }
+        
+        /* --- Stats Grid --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { display: flex; align-items: center; padding: 1.25rem; }
+        .stat-card-content { flex-grow: 1; }
+        .stat-card-content p { color: var(--text-gray); font-weight: 500; font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .stat-card-content h3 { font-size: 2rem; font-weight: 700; }
+        .stat-card-content .subtext { font-size: 0.8rem; color: var(--text-light); }
+        .stat-card .icon-wrapper { width: 48px; height: 48px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; margin-left: 1rem; color: var(--bg-white); }
+        .icon-wrapper.blue { background-color: var(--primary-color); }
+        .icon-wrapper.green { background-color: var(--color-green); }
+        .icon-wrapper.yellow { background-color: var(--color-yellow); }
+
+        /* --- Section Titles & Headers --- */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .section-header h2 { font-size: 1.25rem; font-weight: 600; }
+        .section-header .subtitle { color: var(--text-light); }
+        .view-link { color: var(--primary-color); font-weight: 600; text-decoration: none; font-size: 0.9rem; }
+
+        /* --- Today's Schedule --- */
+        .schedule-list .schedule-item { display: flex; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); }
+        .schedule-list .schedule-item:last-child { border-bottom: none; }
+        .schedule-item .icon { font-size: 1.2rem; color: var(--text-light); margin-right: 1.5rem; }
+        .schedule-details { flex-grow: 1; }
+        .schedule-details .title { display: flex; align-items: center; gap: 0.75rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .details-row { display: flex; color: var(--text-gray); font-size: 0.85rem; gap: 1rem; }
+        .schedule-item .pill { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.7rem; font-weight: 700; }
+        .pill.active { background-color: var(--pill-active-bg); color: var(--pill-active-text); }
+        .pill.upcoming { background-color: var(--pill-upcoming-bg); color: var(--pill-upcoming-text); }
+        .schedule-attendance { text-align: right; color: var(--text-gray); font-size: 0.9rem; }
+        .schedule-attendance strong { font-size: 1.1rem; color: var(--text-dark); }
+        
+        /* --- Course Overview --- */
+        .course-overview-list .course-item { display: flex; align-items: center; gap: 1.5rem; padding: 0.75rem 0; }
+        .course-details-main { flex-grow: 1; }
+        .course-details-main p { color: var(--text-light); font-size: 0.85rem; }
+        .progress-bar-container { width: 100%; background-color: var(--border-color); border-radius: 99px; height: 8px; margin-top: 0.5rem; overflow: hidden; }
+        .progress-bar { height: 100%; border-radius: 99px; }
+        .course-stats { display: flex; align-items: center; gap: 1rem; color: var(--text-gray); font-size: 0.9rem; white-space: nowrap; }
+        .course-stats strong { font-size: 1rem; font-weight: 700; color: var(--text-dark); }
+
+        /* --- Recent Activity --- */
+        .activity-list { list-style: none; }
+        .activity-item { display: flex; gap: 1.5rem; padding: 0.75rem 0; align-items: center; }
+        .activity-item .icon { width: 32px; height: 32px; border-radius: 50%; background-color: var(--bg-light); display: flex; justify-content: center; align-items: center; font-size: 0.9rem; color: var(--primary-color); }
+        .activity-info p { font-weight: 500; }
+        .activity-info .time { font-size: 0.8rem; color: var(--text-light); }
+        .activity-tag { margin-left: auto; white-space: nowrap; font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 6px; }
+        .tag-blue { background-color: #EBF4FF; color: #4299E1; }
+        .tag-red { background-color: #FFEBEB; color: #E53E3E; }
+
+        /* --- Analytics & Student Management --- */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .filters { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .filters select { padding: 0.5rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-white); }
+        .analytics-stats { margin-top: 1.5rem; }
+        .graph-placeholder { background-color: var(--bg-light); border: 1px dashed var(--border-color); border-radius: 10px; height: 250px; display: flex; align-items: center; justify-content: center; color: var(--text-light); }
+        
+        .student-table-wrapper { overflow-x: auto; }
+        .student-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        .student-table th, .student-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .student-table th { font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; }
+        .student-info { display: flex; align-items: center; gap: 1rem; }
+        .student-info .avatar { width: 32px; height: 32px; border-radius: 50%; background-color: var(--bg-light); color: var(--text-gray); display: flex; justify-content: center; align-items: center; font-weight: 600; font-size: 0.9rem; }
+        .student-attendance-bar { width: 60px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--bg-white); font-size: 0.75rem; font-weight: 600; }
+        .trend { display: flex; align-items: center; gap: 0.25rem; font-size: 0.9rem; }
+        .trend.up { color: var(--progress-green); }
+        .trend.down { color: var(--color-red); }
+        
+        /* --- Responsive Design --- */
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .main-content, .header { padding: 1rem; }
+            .dashboard-header h1 { font-size: 1.5rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .schedule-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .schedule-attendance { text-align: left; margin-top: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Smart Attendance</span>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar" id="userAvatar">DSJ</div>
+                <div class="dropdown-menu" id="userDropdown">
+                    <div class="dropdown-header">
+                        <h4>Dr. Sarah Johnson</h4>
+                        <p>teacher@college.edu</p>
+                        <span class="pill">Teacher</span>
+                    </div>
+                    <ul class="dropdown-list">
+                        <li><a href="#"><i class="fas fa-user-circle"></i> Profile</a></li>
+                        <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="#"><i class="fas fa-sign-out-alt"></i> Log out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-header">
+                <h1>Welcome, Dr. Sarah Johnson!</h1>
+                <p>Computer Science Department • Managing 3 courses</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-card-content"><p>Total Students</p><h3>135</h3><p class="subtext">Across 3 courses</p></div><div class="icon-wrapper blue"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-card-content"><p>Overall Attendance</p><h3>81%</h3><p class="subtext">Across all courses</p></div><div class="icon-wrapper blue"><i class="fas fa-chart-pie"></i></div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-card-content"><p>Today's Classes</p><h3>2</h3><p class="subtext">Scheduled for today</p></div><div class="icon-wrapper green"><i class="fas fa-calendar-check"></i></div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-card-content"><p>At Risk Students</p><h3>7</h3><p class="subtext">Need attention</p></div><div class="icon-wrapper yellow"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="main-column">
+                    <section class="card">
+                        <div class="section-header">
+                            <div><h2 style="font-size: 1.1rem;">Today's Schedule</h2><p class="subtitle">Thursday, August 28, 2025</p></div>
+                        </div>
+                        <div class="schedule-list">
+                            <div class="schedule-item">
+                                <div class="icon"><i class="fas fa-clock"></i></div>
+                                <div class="schedule-details">
+                                    <div class="title">Data Structures <span class="pill active">ACTIVE</span></div>
+                                    <div class="details-row"><span>CS301 • Room 10</span></div>
+                                    <div class="details-row"><span>45 Students • 11:00-12:30</span></div>
+                                </div>
+                                <div class="schedule-attendance"><p>Avg. Attendance: <strong>85%</strong></p><a href="#" class="view-link">View Live</a></div>
+                            </div>
+                            <div class="schedule-item">
+                                <div class="icon"><i class="fas fa-clock"></i></div>
+                                <div class="schedule-details">
+                                    <div class="title">Algorithm Analysis <span class="pill upcoming">UPCOMING</span></div>
+                                    <div class="details-row"><span>CS302 • Room 06</span></div>
+                                    <div class="details-row"><span>38 Students • 1:30 - 03:00</span></div>
+                                </div>
+                                <div class="schedule-attendance"><p>Avg. Attendance: <strong>78%</strong></p></div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="card" style="margin-top: 2rem;">
+                        <div class="section-header"><h2>Course Overview</h2></div>
+                        <p class="subtitle" style="margin-top: -1rem; margin-bottom: 1rem;">Attendance summary for all your courses</p>
+                        <div class="course-overview-list">
+                            <div class="course-item"><div class="course-details-main"><h4>Data Structures (CS301)</h4><div class="progress-bar-container"><div class="progress-bar" style="width: 85%; background-color: var(--progress-green);"></div></div></div><div class="course-stats"><span>45 students</span><strong>85%</strong></div></div>
+                            <div class="course-item"><div class="course-details-main"><h4>Algorithm Analysis (CS302)</h4><div class="progress-bar-container"><div class="progress-bar" style="width: 78%; background-color: var(--progress-yellow);"></div></div></div><div class="course-stats"><span>38 students</span><strong>78%</strong></div></div>
+                            <div class="course-item"><div class="course-details-main"><h4>Database Systems (CS401)</h4><div class="progress-bar-container"><div class="progress-bar" style="width: 81%; background-color: var(--progress-green);"></div></div></div><div class="course-stats"><span>52 students</span><strong>81%</strong></div></div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="side-column">
+                    <section class="card">
+                        <div class="section-header"><h2>Recent Activity</h2><a href="#" class="view-link"><i class="fas fa-eye"></i> View All Reports</a></div>
+                        <ul class="activity-list">
+                            <li class="activity-item"><div class="icon"><i class="fas fa-check"></i></div><div class="activity-info"><p>CS301 - Data Structures attendance recorded</p><p class="time">1 hour ago</p></div><div class="activity-tag tag-blue">42 Students</div></li>
+                            <li class="activity-item"><div class="icon"><i class="fas fa-exclamation-triangle" style="color: var(--color-red);"></i></div><div class="activity-info"><p>4 students flagged as at risk in CS302</p><p class="time">5 hours ago</p></div><div class="activity-tag tag-red">High Priority</div></li>
+                            <li class="activity-item"><div class="icon"><i class="fas fa-file-alt"></i></div><div class="activity-info"><p>Weekly attendance report generated</p><p class="time">1 day ago</p></div></li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+
+            <section class="card" style="margin-top: 2rem;">
+                <h2>Analytics Filters</h2>
+                <div class="filters" style="margin-top: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                    <select><option>Course: Data Structures</option></select>
+                    <select><option>Date Range: Last 30 days</option></select>
+                    <button class="btn btn-primary" style="margin-left: auto;"><i class="fas fa-download"></i> Export Report</button>
+                </div>
+                <div class="stats-grid analytics-stats">
+                    <div class="card stat-card" style="box-shadow: none; padding: 0.5rem 0;"><div class="stat-card-content"><p>Overall Attendance</p><h3>81%</h3><p class="subtext" style="color: var(--progress-green);">+3.2% from last period</p></div><div class="icon-wrapper blue"><i class="fas fa-chart-pie"></i></div></div>
+                     <div class="card stat-card" style="box-shadow: none; padding: 0.5rem 0;"><div class="stat-card-content"><p>Total Students</p><h3>45</h3><p class="subtext">Enrolled in Data Structures</p></div><div class="icon-wrapper blue"><i class="fas fa-users"></i></div></div>
+                     <div class="card stat-card" style="box-shadow: none; padding: 0.5rem 0;"><div class="stat-card-content"><p>Classes Held</p><h3>28</h3><p class="subtext">This semester</p></div><div class="icon-wrapper green"><i class="fas fa-calendar-check"></i></div></div>
+                     <div class="card stat-card" style="box-shadow: none; padding: 0.5rem 0;"><div class="stat-card-content"><p>At Risk Students</p><h3>4</h3><p class="subtext">Below 60% attendance</p></div><div class="icon-wrapper yellow"><i class="fas fa-exclamation-triangle"></i></div></div>
+                </div>
+                <div class="dashboard-grid">
+                    <div><h3 style="font-weight: 600; margin-bottom: 0.25rem;">Attendance Trend</h3><p class="subtitle">Weekly attendance percentage over time</p><div class="graph-placeholder" style="margin-top: 1rem;"></div></div>
+                     <div><h3 style="font-weight: 600; margin-bottom: 0.25rem;">Weekly Distribution</h3><p class="subtitle">Average attendance by day of week</p><div class="graph-placeholder" style="margin-top: 1rem;"></div></div>
+                </div>
+            </section>
+
+            <section class="card" style="margin-top: 2rem;">
+                <h2>Student Management</h2>
+                <p class="subtitle">Filter and view students by class, year, and attendance status</p>
+                <div class="filters" style="margin-top: 1rem; margin-bottom: 1.5rem;">
+                    <select><option>Student Type: At Risk Only</option></select>
+                    <select><option>Year: All Years</option></select>
+                    <select><option>Class: All Classes</option></select>
+                    <p class="subtitle" style="margin-left: auto;">Showing 4 students</p>
+                </div>
+                <div class="student-table-wrapper">
+                    <table class="student-table">
+                        <thead><tr><th>Student</th><th>Student ID</th><th>Year</th><th>Class</th><th>Attendance</th><th>Trend</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            <tr><td><div class="student-info"><div class="avatar">JS</div>John Smith</div></td><td>CS2024001</td><td>2nd Year</td><td>CS-A</td><td><div class="student-attendance-bar" style="background-color: var(--progress-red);">45%</div></td><td class="trend down"><i class="fas fa-arrow-down"></i> Down</td><td><button class="btn btn-alert">Send Alert</button></td></tr>
+                             <tr><td><div class="student-info"><div class="avatar">MJ</div>Mike Johnson</div></td><td>CS2024015</td><td>2nd Year</td><td>CS-B</td><td><div class="student-attendance-bar" style="background-color: var(--progress-red);">52%</div></td><td class="trend down"><i class="fas fa-arrow-down"></i> Down</td><td><button class="btn btn-alert">Send Alert</button></td></tr>
+                             <tr><td><div class="student-info"><div class="avatar">SW</div>Sarah Wilson</div></td><td>CS2024032</td><td>2nd Year</td><td>CS-A</td><td><div class="student-attendance-bar" style="background-color: var(--progress-red);">48%</div></td><td class="trend" style="color: var(--text-gray);"><i class="fas fa-minus"></i> Stable</td><td><button class="btn btn-alert">Send Alert</button></td></tr>
+                             <tr><td><div class="student-info"><div class="avatar">AB</div>Alex Brown</div></td><td>CS2024007</td><td>2nd Year</td><td>CS-C</td><td><div class="student-attendance-bar" style="background-color: var(--progress-red);">41%</div></td><td class="trend down"><i class="fas fa-arrow-down"></i> Down</td><td><button class="btn btn-alert">Send Alert</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script>
+        const userAvatar = document.getElementById('userAvatar');
+        const userDropdown = document.getElementById('userDropdown');
+
+        userAvatar.addEventListener('click', () => {
+            userDropdown.classList.toggle('active');
+        });
+
+        // Close dropdown if clicked outside
+        window.addEventListener('click', (event) => {
+            if (!userAvatar.contains(event.target) && !userDropdown.contains(event.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
