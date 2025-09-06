@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - Smart Attendance</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/admin_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        .settings-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        .tab-button {
+            padding: 1rem 2rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-gray);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .settings-section {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .settings-section h3 {
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+        
+        .student-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        
+        .student-info h4 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .student-info p {
+            margin: 0;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        .attendance-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .attendance-good {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .attendance-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .attendance-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .teacher-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .teacher-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .teacher-item:last-child {
+            border-bottom: none;
+        }
+        
+        .bluetooth-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .bluetooth-missing {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .bluetooth-present {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Smart Attendance - System Settings</span>
+            </div>
+            <div class="user-info">
+                <span id="adminName">Admin</span>
+                <div class="user-avatar" id="adminAvatar">A</div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-header">
+                <h1>System Settings</h1>
+                <p>Manage admin, teacher, and student settings</p>
+            </div>
+
+            <div class="settings-tabs">
+                <button class="tab-button active" onclick="switchTab('admin')">Admin Settings</button>
+                <button class="tab-button" onclick="switchTab('teacher')">Teacher Management</button>
+                <button class="tab-button" onclick="switchTab('student')">Student Management</button>
+            </div>
+
+            <!-- Admin Settings Tab -->
+            <div id="admin-tab" class="tab-content active">
+                <div class="settings-section">
+                    <h3>Admin Profile Settings</h3>
+                    <form id="adminSettingsForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="adminPhone">Phone Number</label>
+                                <input type="tel" id="adminPhone" placeholder="Enter phone number">
+                            </div>
+                            <div class="form-group">
+                                <label for="adminEmail">Email</label>
+                                <input type="email" id="adminEmail" placeholder="Enter email">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="adminNewPassword">New Password</label>
+                                <input type="password" id="adminNewPassword" placeholder="Enter new password">
+                            </div>
+                            <div class="form-group">
+                                <label for="adminConfirmPassword">Confirm Password</label>
+                                <input type="password" id="adminConfirmPassword" placeholder="Confirm new password">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Admin Settings</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Teacher Management Tab -->
+            <div id="teacher-tab" class="tab-content">
+                <!-- Remove Teacher Section -->
+                <div class="settings-section">
+                    <h3>Remove Teacher</h3>
+                    <form id="removeTeacherForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="teacherSearch">Search Teacher</label>
+                                <input type="text" id="teacherSearch" placeholder="Enter name, email, or teacher ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="removeReason">Reason for Removal</label>
+                                <select id="removeReason">
+                                    <option value="">Select reason</option>
+                                    <option value="resignation">Resignation</option>
+                                    <option value="termination">Termination</option>
+                                    <option value="transfer">Transfer</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group-full">
+                            <label for="removeReasonText">Additional Details</label>
+                            <textarea id="removeReasonText" rows="3" placeholder="Enter additional details"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger">Remove Teacher</button>
+                    </form>
+                </div>
+
+                <!-- Update Teacher Details Section -->
+                <div class="settings-section">
+                    <h3>Update Teacher Details</h3>
+                    <form id="updateTeacherForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="updateTeacherSearch">Search Teacher</label>
+                                <input type="text" id="updateTeacherSearch" placeholder="Enter email or teacher ID">
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-secondary" onclick="searchTeacher()">Search</button>
+                            </div>
+                        </div>
+                        <div id="teacherUpdateFields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="teacherName">Name</label>
+                                    <input type="text" id="teacherName" placeholder="Teacher name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="teacherEmail">Email</label>
+                                    <input type="email" id="teacherEmail" placeholder="Teacher email">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="teacherPhone">Phone</label>
+                                    <input type="tel" id="teacherPhone" placeholder="Phone number">
+                                </div>
+                                <div class="form-group">
+                                    <label for="teacherBluetoothId">Bluetooth ID</label>
+                                    <input type="text" id="teacherBluetoothId" placeholder="Bluetooth device ID">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Teacher</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Change Teacher Password Section -->
+                <div class="settings-section">
+                    <h3>Change Teacher Password</h3>
+                    <form id="changeTeacherPasswordForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="teacherEmailPassword">Teacher Email</label>
+                                <input type="email" id="teacherEmailPassword" placeholder="Enter teacher email">
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherNewPassword">New Password</label>
+                                <input type="password" id="teacherNewPassword" placeholder="Enter new password">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                    </form>
+                </div>
+
+                <!-- Teachers without Bluetooth ID Section -->
+                <div class="settings-section">
+                    <h3>Teachers Missing Bluetooth ID</h3>
+                    <button class="btn btn-secondary" onclick="loadTeachersWithoutBluetooth()">Load Teachers</button>
+                    <div id="teachersWithoutBluetooth" class="teacher-list"></div>
+                </div>
+            </div>
+
+            <!-- Student Management Tab -->
+            <div id="student-tab" class="tab-content">
+                <!-- Fetch Students Section -->
+                <div class="settings-section">
+                    <h3>Fetch Students</h3>
+                    <form id="fetchStudentsForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentBranch">Branch</label>
+                                <select id="studentBranch">
+                                    <option value="">Select Branch</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentYear">Year</label>
+                                <select id="studentYear">
+                                    <option value="">Select Year</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentDivision">Division</label>
+                                <select id="studentDivision">
+                                    <option value="">Select Division</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Fetch Students</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="studentsList" class="student-list"></div>
+                </div>
+
+                <!-- Block Student Attendance Section -->
+                <div class="settings-section">
+                    <h3>Block Student Attendance</h3>
+                    <form id="blockAttendanceForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="blockStudentSearch">Student Email/ID</label>
+                                <input type="text" id="blockStudentSearch" placeholder="Enter student email or ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="blockUntilDate">Block Until Date</label>
+                                <input type="date" id="blockUntilDate">
+                            </div>
+                        </div>
+                        <div class="form-group-full">
+                            <label for="blockReason">Reason for Blocking</label>
+                            <select id="blockReason">
+                                <option value="">Select reason</option>
+                                <option value="disciplinary">Disciplinary Action</option>
+                                <option value="medical">Medical Leave</option>
+                                <option value="suspension">Suspension</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group-full">
+                            <label for="blockReasonText">Additional Details</label>
+                            <textarea id="blockReasonText" rows="3" placeholder="Enter additional details"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-warning">Block Attendance</button>
+                    </form>
+                </div>
+
+                <!-- Change Student Details Section -->
+                <div class="settings-section">
+                    <h3>Change Student Details</h3>
+                    <form id="changeStudentDetailsForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="changeStudentSearch">Search Student</label>
+                                <input type="text" id="changeStudentSearch" placeholder="Enter email or student ID">
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-secondary" onclick="searchStudent()">Search</button>
+                            </div>
+                        </div>
+                        <div id="studentUpdateFields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="studentNewBranch">New Branch</label>
+                                    <select id="studentNewBranch">
+                                        <option value="">Select Branch</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="studentNewYear">New Year</label>
+                                    <select id="studentNewYear">
+                                        <option value="">Select Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="studentNewDivision">New Division</label>
+                                    <select id="studentNewDivision">
+                                        <option value="">Select Division</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="studentNewPhone">Phone Number</label>
+                                    <input type="tel" id="studentNewPhone" placeholder="Phone number">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="studentNewEmail">Email</label>
+                                    <input type="email" id="studentNewEmail" placeholder="Email">
+                                </div>
+                                <div class="form-group">
+                                    <label for="studentNewPassword">New Password</label>
+                                    <input type="password" id="studentNewPassword" placeholder="New password">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Student</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Remove Student Section -->
+                <div class="settings-section">
+                    <h3>Remove Student</h3>
+                    <form id="removeStudentForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="removeStudentSearch">Student Email/ID</label>
+                                <input type="text" id="removeStudentSearch" placeholder="Enter email or student ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="removeStudentReason">Reason for Removal</label>
+                                <select id="removeStudentReason">
+                                    <option value="">Select reason</option>
+                                    <option value="graduation">Graduation</option>
+                                    <option value="transfer">Transfer</option>
+                                    <option value="dropout">Dropout</option>
+                                    <option value="expulsion">Expulsion</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group-full">
+                            <label for="removeStudentReasonText">Additional Details</label>
+                            <textarea id="removeStudentReasonText" rows="3" placeholder="Enter additional details"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger">Remove Student</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="Js/admin_system.js"></script>
+</body>
+</html>

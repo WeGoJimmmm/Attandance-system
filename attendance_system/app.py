@@ -4,6 +4,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 # Add after other imports
 from backend.routes.admin_routes import init_admin_routes
+from backend.routes.admin_system_routes import init_admin_system_routes
 import os
 import logging
 
@@ -56,6 +57,7 @@ else:
 if firebase_initialized:
     try:
         init_admin_routes(app, db)
+        init_admin_system_routes(app, db)
         logger.info("Admin routes registered successfully")
     except Exception as e:
         logger.error(f"Error registering admin routes: {e}")
